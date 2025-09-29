@@ -12,8 +12,17 @@ def zyz_decomposition(unitaryMatrix):
 
 
 
+    return theta, phi, psi
 
-    # 2. Implementing the decomposition into OpenQASM.
+
+def zyz_decomposition_circuit(theta, phi, psi):
+    """
+    Implement the ZYZ decomposition into OpenQASM.
+
+    Input: theta, phi and psi.
+    Output: OpenQASM circuit decomposition using Ry, Rz and a global phase factor.  
+    """
+
     circuit = f"""
 OPENQASM 3.0;
 include "stdgates.inc";
@@ -28,5 +37,4 @@ rz({phi:.6f}) q[0];
 
 measure q -> c;
 """
-    
     return circuit
