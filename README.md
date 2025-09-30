@@ -1,18 +1,19 @@
 # AC1-UnitaryGen
+
 Parte da cadeira Tópicos Avançados em Algoritmos e Complexidade 1, ministrada pelo professor Adenilton Silva no semestre 2025.2, no Centro de Informática.
 
 Linguagem de Programação: Python.
 
-## Atividades Computacionais 1 
+## Atividades Computacionais 1  
 
 ### 1. Decomposição ZYZ
 
 - Entrada: Matriz Unitária 2x2(unitaryMatrix).
 - Saída: Circuito que descreve essa matriz em *OpenQASM*, utilizando Rz, Ry e fase global.
 
-#### API
+#### 1.1 API
 
-```
+```python
 import numpy as np
 
 def zyz_decomposition(unitaryMatrix):
@@ -24,15 +25,14 @@ def zyz_decomposition(unitaryMatrix):
 
 Com isso, verifique, utilizando a biblioteca Qiskit, se está batendo corretamente.
 
-
 ### 2. Operador Controlado
 
 - Entrada: Matriz Unitária 2x2(unitaryMatrix).
-- Saída: Circuito CunitaryMatrix, ou seja, aplicando a controlada dessa unitária em *OpenQASM*.
+- Saída: Circuito Controlled Unitary(unitaryMatrix), ou seja, aplicando a controlada dessa unitária em *OpenQASM*.
 
-#### API
+#### 2.1 API
 
-```
+```python
 
 import numpy as np
 
@@ -44,5 +44,5 @@ def controlledUnitary(unitaryMatrix)
 
 ```
 
-
+Verifique, utilizando a biblioteca Qiskit, se está batendo corretamente.
 *Deadline: 02/11/25*

@@ -10,14 +10,24 @@ def controlled_unitary(unitaryMatrix):
     # 1. Decompose the unitary matrix into ZYZ decomposition.
     theta, phi, psi = zyz_decomposition(unitaryMatrix)
 
+    # 2. Return the angles in the correct order to be implemented in OpenQASM.
+
+    angles = #....angles....
+
     
-    # 2. Implement the decomposition into OpenQASM.
+# Implementing the controlled unitary operation.
+    return angles
+
+def controlled_unitary_circuit(angles):
+    """
+    Implement the controlled unitary operation in OpenQASM.
+    """
+
+        # 2. Implement the decomposition into OpenQASM.
     circuit = f"""
 OPENQASM 3.0;
 include "stdgates.inc";
 
 qubit[2] q;
 bit[2] c;
-
-// Implementing the controlled unitary operation.
-    return circuit
+"""
