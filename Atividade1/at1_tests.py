@@ -166,7 +166,7 @@ def compare_to_qiskit(unitary, show_details=False):
 def test_zyz_decomposition_matches_qiskit():
     """Test 100 random unitaries against Qiskit's decomposer."""
 
-    rng = np.random.default_rng(1337)
+    rng = np.random.default_rng()
     failed_matrices = []
     
     for i in range(100):
