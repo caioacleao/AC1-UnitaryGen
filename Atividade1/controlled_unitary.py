@@ -12,7 +12,7 @@ def controlled_unitary(unitaryMatrix):
 
     # 2. Return the angles in the correct order to be implemented in OpenQASM.
 
-    angles = #....angles....
+    angles = None #....angles....
 
     
 # Implementing the controlled unitary operation.

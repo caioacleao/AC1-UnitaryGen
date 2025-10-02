@@ -26,36 +26,36 @@ pip install pytest, qiskit, qiskit_qasm3_import, numpy
 
 """
 
-def unitary_from_angles(alpha, beta, gamma, delta):
+def unitary_from_angles(tetha, phi, lambdaa, phase):
     """Construct the 2x2 unitary from the ZYZ angles.
     
-    Input: alpha, beta, gamma, delta - ZYZ decomposition angles and global phase.
+    Input: theta, phi, lambdaa, phase - ZYZ decomposition angles and global phase.
     Output: 2x2 Unitary Matrix, complex128 entries.
     
-    The decomposition follows Qiskit convention: U = e^(i*delta) * Rz(alpha) * Ry(beta) * Rz(gamma).
+    The decomposition follows Qiskit convention: U = e^(i*phase) * Rz(phi) * Ry(theta) * Rz(lambda).
     """
 
-    # Rz 
-    rz_lambda = np.array(
-        [[np.exp(-1j * gamma / 2), 0], [0, np.exp(1j * gamma / 2)]], dtype=np.complex128
+    # Rz
+    rz_phi = np.array(
+        [[np.exp(-1j * phi / 2), 0], [0, np.exp(1j * phi / 2)]], dtype=np.complex128
     )
     
     # Ry
     ry_theta = np.array(
         [
-            [np.cos(beta / 2), -np.sin(beta / 2)],
-            [np.sin(beta / 2), np.cos(beta / 2)],
+            [np.cos(tetha / 2), -np.sin(tetha / 2)],
+            [np.sin(tetha / 2), np.cos(tetha / 2)],
         ],
         dtype=np.complex128,
     )
     
-    # Rz
-    rz_phi = np.array(
-        [[np.exp(-1j * alpha / 2), 0], [0, np.exp(1j * alpha / 2)]], dtype=np.complex128
+    # Rz 
+    rz_lambda = np.array(
+        [[np.exp(-1j * lambdaa / 2), 0], [0, np.exp(1j * lambdaa / 2)]], dtype=np.complex128
     )
 
     # 
-    unitaryMatrix = np.exp(1j * delta) * rz_phi @ ry_theta @ rz_lambda
+    unitaryMatrix = np.exp(1j * phase) * rz_phi @ ry_theta @ rz_lambda
     return unitaryMatrix
 
 
@@ -80,20 +80,20 @@ def compare_to_qiskit(unitary, show_details=False):
     """
 
     local_angles = zyz_decomposition(unitary)
+    tetha, phi, lambdaa, phase = local_angles
 
     decomposer = OneQubitEulerDecomposer(basis="ZYZ")
-    qiskit_alpha, qiskit_beta, qiskit_gamma, qiskit_phase = decomposer.angles_and_phase(unitary)
+    qiskit_tetha, qiskit_phi, qiskit_lambda, qiskit_phase = decomposer.angles_and_phase(unitary)
 
     # Reconstruct from our angles
-    local_u = unitary_from_angles(**local_angles)
+    local_u = unitary_from_angles(*local_angles)
     
     # Reconstruct from Qiskit angles
     # Qiskit returns (theta, phi, lambda, phase)
-    # Our function expects (alpha=phi, beta=theta, gamma=lambda, delta=phase)
-    qiskit_u = unitary_from_angles(qiskit_beta, qiskit_alpha, qiskit_gamma, qiskit_phase)
+    qiskit_u = unitary_from_angles(qiskit_tetha, qiskit_phi, qiskit_lambda, qiskit_phase)
 
     # Get unitary from OpenQASM circuit
-    qasm = zyz_decomposition_circuit(**local_angles)
+    qasm = zyz_decomposition_circuit(*local_angles)
     qc = qasm3_loads(qasm)
     qc_no_measure = qc.remove_final_measurements(inplace=False)
     qasm_u = Operator(qc_no_measure).data
@@ -117,17 +117,17 @@ def compare_to_qiskit(unitary, show_details=False):
         print()
         
         print(f"Nossa decomposição:")
-        print(f"  α = {local_angles['alpha']:.10f}")
-        print(f"  β = {local_angles['beta']:.10f}")
-        print(f"  γ = {local_angles['gamma']:.10f}")
-        print(f"  δ = {local_angles['delta']:.10f}")
+        print(f"  θ (theta)  = {theta}")
+        print(f"  φ (phi)    = {phi}")
+        print(f"  λ (lambda) = {lambdaa}")
+        print(f"  γ (phase)  = {phase}")
         print()
         
         print(f"Decomposição Qiskit (theta, phi, lambda, phase):")
-        print(f"  θ (theta) = {qiskit_alpha:.10f}")
-        print(f"  φ (phi) = {qiskit_beta:.10f}")
-        print(f"  λ (lambda) = {qiskit_gamma:.10f}")
-        print(f"  γ (phase) = {qiskit_phase:.10f}")
+        print(f"  θ (theta)  = {qiskit_tetha:.10f}")
+        print(f"  φ (phi)    = {qiskit_phi:.10f}")
+        print(f"  λ (lambda) = {qiskit_lambda:.10f}")
+        print(f"  γ (phase)  = {qiskit_phase:.10f}")
         print()
         
         print(f"Nossa reconstrução:")
