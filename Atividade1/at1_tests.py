@@ -173,8 +173,9 @@ def compare_controlled_unitary_to_qiskit(unitary, show_details=False):
     2. Qiskit's controlled unitary also produces the correct 4x4 matrix
     3. Both implementations match the theoretical controlled unitary
     """
-    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import UnitaryGate
     from qiskit.quantum_info import Operator
+    
     
     # Get our controlled unitary circuit
     our_qasm = controlled_unitary_circuit(unitary)
@@ -182,22 +183,21 @@ def compare_controlled_unitary_to_qiskit(unitary, show_details=False):
     our_qc_no_measure = our_qc.remove_final_measurements(inplace=False)
     our_controlled_u = Operator(our_qc_no_measure).data
     
-    # Get Qiskit's controlled unitary using a more direct approach
-    from qiskit.quantum_info import Operator as QiskitOperator
-    
     # Create the controlled unitary manually: |0><0| ⊗ I + |1><1| ⊗ U
-    qiskit_controlled_u = np.kron(np.array([[1, 0], [0, 0]]), np.eye(2)) + np.kron(np.array([[0, 0], [0, 1]]), unitary)
+
+    # Qiskit's ControlledGate does not support to_matrix() directly.
+    # Instead, build a QuantumCircuit, append the controlled gate, and extract the matrix.
+    from qiskit import QuantumCircuit
+    from qiskit.circuit import QuantumRegister
+
+    # Create a 2-qubit circuit
+    qc = QuantumCircuit(2)
+    cu = UnitaryGate(unitary).control(1)
+    qc.append(cu, [1,0])
+    qiskit_controlled_u = Operator(qc).data
+
     
-    # Theoretical controlled unitary: |0><0| ⊗ I + |1><1| ⊗ U
-    theoretical_controlled = np.kron(np.array([[1, 0], [0, 0]]), np.eye(2)) + np.kron(np.array([[0, 0], [0, 1]]), unitary)
-    
-    # Check that our implementation matches the theoretical
-    our_theoretical_ok = np.allclose(theoretical_controlled, our_controlled_u, atol=1e-8)
-    
-    # Check that Qiskit's implementation matches the theoretical
-    qiskit_theoretical_ok = np.allclose(theoretical_controlled, qiskit_controlled_u, atol=1e-8)
-    
-    # Check that our implementation matches Qiskit's
+
     our_qiskit_ok = np.allclose(our_controlled_u, qiskit_controlled_u, atol=1e-8)
     
     # Show detailed comparison only if requested
@@ -208,11 +208,7 @@ def compare_controlled_unitary_to_qiskit(unitary, show_details=False):
         print(f"Matriz unitária original (2x2):")
         print(unitary)
         print()
-        
-        print(f"Teórica controlled unitary (4x4):")
-        print(theoretical_controlled)
-        print()
-        
+
         print(f"Nossa implementação (4x4):")
         print(our_controlled_u)
         print()
@@ -220,25 +216,12 @@ def compare_controlled_unitary_to_qiskit(unitary, show_details=False):
         print(f"Implementação Qiskit (4x4):")
         print(qiskit_controlled_u)
         print()
-        
-        # Calculate differences
-        diff_our_theoretical = np.max(np.abs(theoretical_controlled - our_controlled_u))
-        diff_qiskit_theoretical = np.max(np.abs(theoretical_controlled - qiskit_controlled_u))
-        diff_our_qiskit = np.max(np.abs(our_controlled_u - qiskit_controlled_u))
-        
-        print(f"Diferenças:")
-        print(f"  Teórica vs Nossa:        {diff_our_theoretical:.2e}")
-        print(f"  Teórica vs Qiskit:       {diff_qiskit_theoretical:.2e}")
-        print(f"  Nossa vs Qiskit:         {diff_our_qiskit:.2e}")
-        print()
-        
-        print(f"Resultados:")
-        print(f"  Nossa vs Teórica OK:     {our_theoretical_ok}")
-        print(f"  Qiskit vs Teórica OK:    {qiskit_theoretical_ok}")
+
+        print(f"Resultado:")
         print(f"  Nossa vs Qiskit OK:      {our_qiskit_ok}")
         print("="*80)
     
-    return our_theoretical_ok and qiskit_theoretical_ok and our_qiskit_ok
+    return our_qiskit_ok
 
 
 def test_controlled_unitary_matches_qiskit():

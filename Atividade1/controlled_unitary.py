@@ -3,7 +3,7 @@ from zyz_decomposition import zyz_decomposition
 
 def controlled_unitary(unitaryMatrix):
     """
-    Apply a controlled unitary operation to a 2x2 unitary matrix and return the circuit in OpenQASM.
+    Apply a controlled unitary operation to a 2x2 unitary matrix and return the A, B and C operators which implement the controlled operation. 
     """
 
     # 1. Decompose the unitary matrix into ZYZ decomposition.
