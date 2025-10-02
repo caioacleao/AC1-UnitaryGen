@@ -1,4 +1,3 @@
-import numpy as np
 from zyz_decomposition import zyz_decomposition
 
 
@@ -8,26 +7,41 @@ def controlled_unitary(unitaryMatrix):
     """
 
     # 1. Decompose the unitary matrix into ZYZ decomposition.
-    theta, phi, psi = zyz_decomposition(unitaryMatrix)
+    theta, phi, lambdaa, phase = zyz_decomposition(unitaryMatrix)
 
-    # 2. Return the angles in the correct order to be implemented in OpenQASM.
-
-    angles = #....angles....
-
+    A_op = {"Rz": lambdaa, "Ry": theta/2.0}
+    B_op = {"Ry": -theta/2.0, "Rz": -(phi+lambdaa)/2.0}
+    C_op = {"Rz": (phi - lambdaa)/2.0}
+    return A_op, B_op, C_op, phase
     
-# Implementing the controlled unitary operation.
-    return angles
 
-def controlled_unitary_circuit(angles):
+def controlled_unitary_circuit(unitaryMatrix):
     """
     Implement the controlled unitary operation in OpenQASM.
     """
 
-        # 2. Implement the decomposition into OpenQASM.
+    A, B, C, phase = controlled_unitary(unitaryMatrix)
+
     circuit = f"""
 OPENQASM 3.0;
 include "stdgates.inc";
 
 qubit[2] q;
 bit[2] c;
+
+rz({C["Rz"]}) q[1];
+
+cnot q[0], q[1];
+
+rz({B["Rz"]}) q[1];
+ry({B["Ry"]}) q[1];
+
+cnot q[0], q[1];
+
+ry({A["Ry"]}) q[1];
+rz({A["Rz"]}) q[1];
+p({phase}) q[0];
+
+measure q -> c;
 """
+    return circuit
