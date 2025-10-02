@@ -7,16 +7,11 @@ def controlled_unitary(unitaryMatrix):
     """
 
     # 1. Decompose the unitary matrix into ZYZ decomposition.
-<<<<<<< Updated upstream
-    theta, phi, psi = zyz_decomposition(unitaryMatrix)
-
-    # 2. Return the angles in the correct order to be implemented in OpenQASM.
-
-    angles = #....angles....
-=======
-    theta, phi, lambdaa, phase = zyz_decomposition(unitaryMatrix)
->>>>>>> Stashed changes
-
+    angles = zyz_decomposition(unitaryMatrix)
+    theta = angles["beta"]  # beta corresponds to theta in the decomposition
+    phi = angles["alpha"]   # alpha corresponds to phi in the decomposition  
+    lambdaa = angles["gamma"]  # gamma corresponds to lambda in the decomposition
+    phase = angles["delta"]    # delta is the global phase
     A_op = {"Rz": lambdaa, "Ry": theta/2.0}
     B_op = {"Ry": -theta/2.0, "Rz": -(phi+lambdaa)/2.0}
     C_op = {"Rz": (phi - lambdaa)/2.0}
@@ -37,18 +32,19 @@ include "stdgates.inc";
 qubit[2] q;
 bit[2] c;
 
-rz({C["Rz"]}) q[1];
+rz({A["Rz"]}) q[0];
+ry({A["Ry"]}) q[0];
+p({phase}) q[1];
 
-cnot q[0], q[1];
+cx q[1], q[0];
 
-rz({B["Rz"]}) q[1];
-ry({B["Ry"]}) q[1];
+ry({B["Ry"]}) q[0];
+rz({B["Rz"]}) q[0];
 
-cnot q[0], q[1];
+cx q[1], q[0];
 
-ry({A["Ry"]}) q[1];
-rz({A["Rz"]}) q[1];
-p({phase}) q[0];
+rz({C["Rz"]}) q[0];
+
 
 measure q -> c;
 """

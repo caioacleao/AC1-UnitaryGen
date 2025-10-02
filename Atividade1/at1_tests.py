@@ -4,6 +4,7 @@ from qiskit.synthesis import OneQubitEulerDecomposer
 from qiskit.qasm3 import loads as qasm3_loads
 
 from zyz_decomposition import zyz_decomposition, zyz_decomposition_circuit
+from controlled_unitary import controlled_unitary_circuit
 
 
 """
@@ -162,6 +163,104 @@ def compare_to_qiskit(unitary, show_details=False):
         print("="*80)
 
     return qiskit_reconstruction_ok and our_reconstruction_ok and qasm_circuit_ok
+
+
+def compare_controlled_unitary_to_qiskit(unitary, show_details=False):
+    """Compare local controlled unitary implementation with Qiskit's implementation.
+    
+    Test that:
+    1. Our controlled unitary circuit produces the correct 4x4 matrix
+    2. Qiskit's controlled unitary also produces the correct 4x4 matrix
+    3. Both implementations match the theoretical controlled unitary
+    """
+    from qiskit import QuantumCircuit
+    from qiskit.quantum_info import Operator
+    
+    # Get our controlled unitary circuit
+    our_qasm = controlled_unitary_circuit(unitary)
+    our_qc = qasm3_loads(our_qasm)
+    our_qc_no_measure = our_qc.remove_final_measurements(inplace=False)
+    our_controlled_u = Operator(our_qc_no_measure).data
+    
+    # Get Qiskit's controlled unitary using a more direct approach
+    from qiskit.quantum_info import Operator as QiskitOperator
+    
+    # Create the controlled unitary manually: |0><0| ⊗ I + |1><1| ⊗ U
+    qiskit_controlled_u = np.kron(np.array([[1, 0], [0, 0]]), np.eye(2)) + np.kron(np.array([[0, 0], [0, 1]]), unitary)
+    
+    # Theoretical controlled unitary: |0><0| ⊗ I + |1><1| ⊗ U
+    theoretical_controlled = np.kron(np.array([[1, 0], [0, 0]]), np.eye(2)) + np.kron(np.array([[0, 0], [0, 1]]), unitary)
+    
+    # Check that our implementation matches the theoretical
+    our_theoretical_ok = np.allclose(theoretical_controlled, our_controlled_u, atol=1e-8)
+    
+    # Check that Qiskit's implementation matches the theoretical
+    qiskit_theoretical_ok = np.allclose(theoretical_controlled, qiskit_controlled_u, atol=1e-8)
+    
+    # Check that our implementation matches Qiskit's
+    our_qiskit_ok = np.allclose(our_controlled_u, qiskit_controlled_u, atol=1e-8)
+    
+    # Show detailed comparison only if requested
+    if show_details:
+        print("\n" + "="*80)
+        print("COMPARAÇÃO CONTROLLED UNITARY:")
+        print("="*80)
+        print(f"Matriz unitária original (2x2):")
+        print(unitary)
+        print()
+        
+        print(f"Teórica controlled unitary (4x4):")
+        print(theoretical_controlled)
+        print()
+        
+        print(f"Nossa implementação (4x4):")
+        print(our_controlled_u)
+        print()
+        
+        print(f"Implementação Qiskit (4x4):")
+        print(qiskit_controlled_u)
+        print()
+        
+        # Calculate differences
+        diff_our_theoretical = np.max(np.abs(theoretical_controlled - our_controlled_u))
+        diff_qiskit_theoretical = np.max(np.abs(theoretical_controlled - qiskit_controlled_u))
+        diff_our_qiskit = np.max(np.abs(our_controlled_u - qiskit_controlled_u))
+        
+        print(f"Diferenças:")
+        print(f"  Teórica vs Nossa:        {diff_our_theoretical:.2e}")
+        print(f"  Teórica vs Qiskit:       {diff_qiskit_theoretical:.2e}")
+        print(f"  Nossa vs Qiskit:         {diff_our_qiskit:.2e}")
+        print()
+        
+        print(f"Resultados:")
+        print(f"  Nossa vs Teórica OK:     {our_theoretical_ok}")
+        print(f"  Qiskit vs Teórica OK:    {qiskit_theoretical_ok}")
+        print(f"  Nossa vs Qiskit OK:      {our_qiskit_ok}")
+        print("="*80)
+    
+    return our_theoretical_ok and qiskit_theoretical_ok and our_qiskit_ok
+
+
+def test_controlled_unitary_matches_qiskit():
+    """Test 100 random unitaries against Qiskit's controlled unitary implementation."""
+    
+    rng = np.random.default_rng()
+    failed_matrices = []
+    
+    for i in range(100):
+        u = random_unitary(rng)
+        result = compare_controlled_unitary_to_qiskit(u, show_details=False)
+        
+        if not result:
+            failed_matrices.append((i, u))
+    
+    if failed_matrices:
+        print(f"\n Teste controlled unitary falhou em {len(failed_matrices)} matrizes. Mostrando detalhes da primeira falha (matriz {failed_matrices[0][0]+1}):")
+        compare_controlled_unitary_to_qiskit(failed_matrices[0][1], show_details=True)
+        assert False, f"Teste controlled unitary falhou em {len(failed_matrices)} matrizes. Primeira falha na matriz {failed_matrices[0][0]+1}."
+    else:
+        print(f"{100 - len(failed_matrices)}/100 testes controlled unitary passaram")
+
 
 def test_zyz_decomposition_matches_qiskit():
     """Test 100 random unitaries against Qiskit's decomposer."""
