@@ -80,17 +80,17 @@ def compare_to_qiskit(unitary, show_details=False):
     """
 
     local_angles = zyz_decomposition(unitary)
-    tetha, phi, lambdaa, phase = local_angles
+    theta, phi, lambdaa, phase = local_angles
 
     decomposer = OneQubitEulerDecomposer(basis="ZYZ")
-    qiskit_tetha, qiskit_phi, qiskit_lambda, qiskit_phase = decomposer.angles_and_phase(unitary)
+    qiskit_theta, qiskit_phi, qiskit_lambda, qiskit_phase = decomposer.angles_and_phase(unitary)
 
     # Reconstruct from our angles
     local_u = unitary_from_angles(*local_angles)
     
     # Reconstruct from Qiskit angles
     # Qiskit returns (theta, phi, lambda, phase)
-    qiskit_u = unitary_from_angles(qiskit_tetha, qiskit_phi, qiskit_lambda, qiskit_phase)
+    qiskit_u = unitary_from_angles(qiskit_theta, qiskit_phi, qiskit_lambda, qiskit_phase)
 
     # Get unitary from OpenQASM circuit
     qasm = zyz_decomposition_circuit(*local_angles)
@@ -112,33 +112,33 @@ def compare_to_qiskit(unitary, show_details=False):
         print("\n" + "="*80)
         print("COMPARAÇÃO DETALHADA:")
         print("="*80)
-        print(f"Matriz original:")
+        print("Matriz original:")
         print(unitary)
         print()
         
-        print(f"Nossa decomposição:")
+        print("Nossa decomposição:")
         print(f"  θ (theta)  = {theta}")
         print(f"  φ (phi)    = {phi}")
         print(f"  λ (lambda) = {lambdaa}")
         print(f"  γ (phase)  = {phase}")
         print()
         
-        print(f"Decomposição Qiskit (theta, phi, lambda, phase):")
-        print(f"  θ (theta)  = {qiskit_tetha:.10f}")
+        print("Decomposição Qiskit (theta, phi, lambda, phase):")
+        print(f"  θ (theta)  = {qiskit_theta:.10f}")
         print(f"  φ (phi)    = {qiskit_phi:.10f}")
         print(f"  λ (lambda) = {qiskit_lambda:.10f}")
         print(f"  γ (phase)  = {qiskit_phase:.10f}")
         print()
         
-        print(f"Nossa reconstrução:")
+        print("Nossa reconstrução:")
         print(local_u)
         print()
         
-        print(f"Reconstrução Qiskit:")
+        print("Reconstrução Qiskit:")
         print(qiskit_u)
         print()
         
-        print(f"Circuito QASM:")
+        print("Circuito QASM:")
         print(qasm_u)
         print()
         
@@ -148,14 +148,14 @@ def compare_to_qiskit(unitary, show_details=False):
         diff_local_qiskit = np.max(np.abs(local_u - qiskit_u))
         diff_local_qasm = np.max(np.abs(local_u - qasm_u))
         
-        print(f"Diferenças:")
+        print("Diferenças:")
         print(f"  Original vs Nossa:      {diff_original_local:.2e}")
         print(f"  Original vs Qiskit:     {diff_original_qiskit:.2e}")
         print(f"  Nossa vs Qiskit:        {diff_local_qiskit:.2e}")
         print(f"  Nossa vs QASM:          {diff_local_qasm:.2e}")
         print()
         
-        print(f"Resultados:")
+        print("Resultados:")
         print(f"  Nossa reconstrução OK:     {our_reconstruction_ok}")
         print(f"  Qiskit reconstrução OK:     {qiskit_reconstruction_ok}")
         print(f"  QASM circuito OK:           {qasm_circuit_ok}")

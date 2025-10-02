@@ -22,8 +22,6 @@ def zyz_decomposition(unitaryMatrix):
     u00 = U_prime[0, 0]  # The other 2 elements are not used in the decomposition.
     u10 = U_prime[1, 0]
     
-    eps = 1e-10
-    
     # Compute beta using |u00| = cos(beta/2)
     theta = 2 * np.arccos(np.abs(u00))
     
